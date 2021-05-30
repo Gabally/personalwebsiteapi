@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/jinzhu/gorm"
+	"github.com/dgrijalva/jwt-go"
 )
 
 type User struct {
@@ -27,4 +28,14 @@ type Post struct {
 	Description string `gorm:"type:varchar(100);not null;default:null"`
 	Content string `gorm:"type:varchar(100000);not null;default:null"`
 	Published bool
+}
+
+type Claims struct {
+	Username string `json:"username"`
+	jwt.StandardClaims
+}
+
+type Credentials struct {
+	Password string `gorm:"type:varchar(200);not null;default:null;json:"password"`
+	Username string `gorm:"type:varchar(50);not null;default:null;json:"username"`
 }

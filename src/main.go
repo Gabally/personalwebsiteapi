@@ -18,10 +18,12 @@ import (
 //Globals
 var db *gorm.DB
 var err error
+var jwtKey []byte
+var cosrsOrigins string
 
 func corsHeader(next http.Handler) http.Handler {
     return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-        w.Header().Add("Access-Control-Allow-Origin", "*")
+        w.Header().Add("Access-Control-Allow-Origin", cosrsOrigins)
         next.ServeHTTP(w, r)
     })
 }
@@ -33,7 +35,7 @@ func jsonHeader(next http.Handler) http.Handler {
     })
 }
 
-func main(){
+func main() {
 	err := godotenv.Load()
 	if err != nil {
 	  log.Fatal("Error loading .env file")
@@ -45,6 +47,8 @@ func main(){
 	user := os.Getenv("DBUSER")
 	dbname := os.Getenv("DBNAME")
 	dbpassword := os.Getenv("DBPASSWORD")
+
+	jwtKey = []byte(os.Getenv("JWTKEY"))
 
 	// Database connection string
 	dbURI := fmt.Sprintf("host=%s user=%s dbname=%s sslmode=disable password=%s port=%s", host, user, dbname, dbpassword, dbPort)
@@ -59,17 +63,29 @@ func main(){
 
 	defer db.Close()
 
-	db.AutoMigrate(&User{})
 	db.AutoMigrate(&Tool{})
 	db.AutoMigrate(&Post{})
+	db.AutoMigrate(&Credentials{})
 
 	router := mux.NewRouter()
 
-	if (os.Getenv("USERCORS") == "true"){
+	if (os.Getenv("CORS") != ""){
+		cosrsOrigins = os.Getenv("CORS")
 		router.Use(corsHeader)
 		fmt.Println("[Warning] CORS is enabled!")
 	}
 	router.Use(jsonHeader)
+
+	authenticatedRouter := router.PathPrefix("/operations").Subrouter()
+	authenticatedRouter.Use(isAuthenticatedMiddleware)
+
+	authenticatedRouter.HandleFunc("/create/post", CreatePost).Methods("POST")
+	authenticatedRouter.HandleFunc("/create/tool", CreateTool).Methods("POST")
+	
+	authenticatedRouter.HandleFunc("/delete/post/{id}", DeletePost).Methods("DELETE")
+	authenticatedRouter.HandleFunc("/delete/tool/{id}", DeleteTool).Methods("DELETE")
+
+	authenticatedRouter.HandleFunc("/update/post/{id}", UpdatePost).Methods("PUT")
 
 	router.HandleFunc("/posts", GetPosts).Methods("GET")
 	router.HandleFunc("/post/{title}", GetPost).Methods("GET")
@@ -78,13 +94,13 @@ func main(){
 
 	router.HandleFunc("/tools", GetTools).Methods("GET")
 
-	router.HandleFunc("/create/post", CreatePost).Methods("POST")
-	router.HandleFunc("/create/tool", CreateTool).Methods("POST")
-	
-	router.HandleFunc("/delete/post/{id}", DeletePost).Methods("DELETE")
-	router.HandleFunc("/delete/tool/{id}", DeleteTool).Methods("DELETE")
+	router.HandleFunc("/auth/refresh", Refresh).Methods("GET")
 
-	router.HandleFunc("/update/post/{id}", UpdatePost).Methods("PUT")
+
+	router.HandleFunc("/create/credentials", SetCredentials).Methods("POST")
+
+	router.HandleFunc("/auth/login", Signin).Methods("POST")
+	
 
 	log.Fatal(http.ListenAndServe(":"+os.Getenv("APIPORT"), router))
 }

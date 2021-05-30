@@ -1,4 +1,6 @@
 *.env
 
+/src/api
+
 *.sh
 *.bat

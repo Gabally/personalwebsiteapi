@@ -1,2 +1,2 @@
-# Blog API
-A simple api to create/edit/delete posts made with markdown and get them rendered.
+# Posts/Tools API
+A simple REST api to create/edit/delete posts and tools for my personal website.

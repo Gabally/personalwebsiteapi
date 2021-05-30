@@ -45,7 +45,7 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
-
+	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(&createdPost.Value)
 }
 
@@ -74,6 +74,6 @@ func UpdatePost(w http.ResponseWriter, r *http.Request) {
 	post.Published = updatedPost.Published
 
 	db.Save(&post)
-
+	w.WriteHeader(http.StatusAccepted)
 	json.NewEncoder(w).Encode(&post)
 }

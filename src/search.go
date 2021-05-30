@@ -11,18 +11,29 @@ func Search(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		var posts []Post
 		var finalPosts []Post
+		var tools []Tool
+		type QueryResult struct {
+			Posts []Post
+			Tools []Tool
+		}
 		db.Where("title LIKE ?", "%"+query+"%").Select([]string{"title", "published"}).Find(&posts)
 	
-		for _, element := range posts {
-			if(element.Published) {
-				finalPosts = append(finalPosts, element)
+		db.Where("name LIKE ?", "%"+query+"%").Select([]string{"name"}).Find(&tools)
+
+		var queryResult QueryResult 
+
+		if(len(posts) != 0) {
+			for _, element := range posts {
+				if(element.Published) {
+					finalPosts = append(finalPosts, element)
+				}
 			}
-		}
-		if (finalPosts == nil){
-			json.NewEncoder(w).Encode(make([]string, 0))
 		} else {
-			json.NewEncoder(w).Encode(&finalPosts)
+			finalPosts = make([]Post, 0)
 		}
+		queryResult.Posts = finalPosts
+		queryResult.Tools = tools
+		json.NewEncoder(w).Encode(&queryResult)
 	} else {
 		w.WriteHeader(http.StatusBadRequest)
 	}
