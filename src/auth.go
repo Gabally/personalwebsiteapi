@@ -55,13 +55,18 @@ func Signin(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+	
+	if (credentials == Credentials{}) {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
 
-	if (sentCreds.Username != credentials.Username || !CheckPasswordHash(sentCreds.Password, credentials.Password) || credentials == Credentials{}) {
+	if (sentCreds.Username != credentials.Username || !CheckPasswordHash(sentCreds.Password, credentials.Password)) {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
-	expirationTime := time.Now().Add(5 * time.Minute)
+	expirationTime := time.Now().Add(20 * time.Minute)
 	claims := &Claims{
 		Username: sentCreds.Username,
 		StandardClaims: jwt.StandardClaims{
@@ -118,7 +123,7 @@ func Refresh(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	expirationTime := time.Now().Add(5 * time.Minute)
+	expirationTime := time.Now().Add(20 * time.Minute)
 	claims.ExpiresAt = expirationTime.Unix()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString(jwtKey)
@@ -134,6 +139,39 @@ func Refresh(w http.ResponseWriter, r *http.Request) {
 		HttpOnly: true,
 		Path: "/",
 	})
+}
+
+func needsRefresh(w http.ResponseWriter, r *http.Request) {
+        c, err := r.Cookie("token")
+		if err != nil {
+			if err == http.ErrNoCookie {
+				w.WriteHeader(http.StatusUnauthorized)
+				return
+			}
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		tknStr := c.Value
+
+		claims := &Claims{}
+
+		tkn, err := jwt.ParseWithClaims(tknStr, claims, func(token *jwt.Token) (interface{}, error) {
+			return jwtKey, nil
+		})
+		if err != nil {
+			if err == jwt.ErrSignatureInvalid {
+				w.WriteHeader(http.StatusUnauthorized)
+				return
+			}
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		if !tkn.Valid {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
 }
 
 func isAuthenticatedMiddleware(next http.Handler) http.Handler {

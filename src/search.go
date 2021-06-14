@@ -18,7 +18,7 @@ func Search(w http.ResponseWriter, r *http.Request) {
 		}
 		db.Where("title LIKE ?", "%"+query+"%").Select([]string{"title", "published"}).Find(&posts)
 	
-		db.Where("name LIKE ?", "%"+query+"%").Select([]string{"name"}).Find(&tools)
+		db.Where("name LIKE ?", "%"+query+"%").Select([]string{"name", "link"}).Find(&tools)
 
 		var queryResult QueryResult 
 

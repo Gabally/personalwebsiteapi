@@ -5,13 +5,6 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-type User struct {
-	gorm.Model
-
-	Username  string `gorm:"type:varchar(20);unique;not null;default:null"`
-	Password string `gorm:"type:varchar(50);not null;default:null"`
-}
-
 type Tool struct {
 	gorm.Model
 
@@ -26,8 +19,8 @@ type Post struct {
 	Title  string `gorm:"type:varchar(100);not null;unique;default:null"`
 	Image string `gorm:"type:varchar(200);not null;default:null"`
 	Description string `gorm:"type:varchar(100);not null;default:null"`
-	Content string `gorm:"type:varchar(100000);not null;default:null"`
-	Published bool
+	Content string `gorm:"type:varchar(1000000);not null;default:null"`
+	Published bool  `gorm:"type:boolean;not null;default: false"`
 }
 
 type Claims struct {

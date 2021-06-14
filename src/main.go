@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"net/http"
+	"strings"
 
 	"github.com/jinzhu/gorm"
 
@@ -19,11 +20,26 @@ import (
 var db *gorm.DB
 var err error
 var jwtKey []byte
-var cosrsOrigins string
+var cosrsOrigins []string
+
+func Find(slice []string, val string) (int, bool) {
+    for i, item := range slice {
+        if item == val {
+            return i, true
+        }
+    }
+    return -1, false
+}
 
 func corsHeader(next http.Handler) http.Handler {
     return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-        w.Header().Add("Access-Control-Allow-Origin", cosrsOrigins)
+		origin := r.Header.Get("origin")
+		_, found := Find(cosrsOrigins, origin)
+		if (found) {
+			w.Header().Add("Access-Control-Allow-Origin", origin)
+			w.Header().Add("Access-Control-Allow-Credentials", "true")
+			w.Header().Add("Access-Control-Allow-Headers", "Content-Type, Origin, Accept, token")
+		}
         next.ServeHTTP(w, r)
     })
 }
@@ -69,15 +85,24 @@ func main() {
 
 	router := mux.NewRouter()
 
-	if (os.Getenv("CORS") != ""){
-		cosrsOrigins = os.Getenv("CORS")
+	if (os.Getenv("CORS") != "") {
+		cosrsOrigins = strings.Split(os.Getenv("CORS"), ",")
 		router.Use(corsHeader)
 		fmt.Println("[Warning] CORS is enabled!")
+		router.Methods("OPTIONS").HandlerFunc(
+			func(w http.ResponseWriter, r *http.Request){
+				headers := w.Header()
+				headers.Add("Access-Control-Allow-Methods", "GET, POST, PUT, OPTIONS, DELETE")
+		})
 	}
 	router.Use(jsonHeader)
+	
 
 	authenticatedRouter := router.PathPrefix("/operations").Subrouter()
 	authenticatedRouter.Use(isAuthenticatedMiddleware)
+	
+	authenticatedRouter.HandleFunc("/get/posts", GetPostsAuthenticated).Methods("GET")
+	authenticatedRouter.HandleFunc("/get/post/{title}", GetPostAuthenticated).Methods("GET")
 
 	authenticatedRouter.HandleFunc("/create/post", CreatePost).Methods("POST")
 	authenticatedRouter.HandleFunc("/create/tool", CreateTool).Methods("POST")
@@ -95,12 +120,11 @@ func main() {
 	router.HandleFunc("/tools", GetTools).Methods("GET")
 
 	router.HandleFunc("/auth/refresh", Refresh).Methods("GET")
-
+	router.HandleFunc("/auth/needsrefresh", needsRefresh).Methods("GET")
 
 	router.HandleFunc("/create/credentials", SetCredentials).Methods("POST")
 
 	router.HandleFunc("/auth/login", Signin).Methods("POST")
-	
 
 	log.Fatal(http.ListenAndServe(":"+os.Getenv("APIPORT"), router))
 }

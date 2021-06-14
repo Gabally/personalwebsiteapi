@@ -25,7 +25,29 @@ func GetPosts(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func GetPostsAuthenticated(w http.ResponseWriter, r *http.Request) {
+	var posts []Post
+
+	db.Select([]string{"id", "title", "image", "description", "published"}).Find(&posts)
+
+	if (posts == nil) {
+		json.NewEncoder(w).Encode(make([]string, 0))
+	} else {
+		json.NewEncoder(w).Encode(&posts)
+	}
+}
+
 func GetPost(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	var post Post
+
+	db.Where("title = ? AND published = ?", params["title"], true).First(&post)
+
+	json.NewEncoder(w).Encode(&post)
+}
+
+
+func GetPostAuthenticated(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	var post Post
 
