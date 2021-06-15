@@ -24,4 +24,4 @@ jobs:
           key: ${{ secrets.KEY }}
           source: "./src/api"
           target: ${{ secrets.TARGET_FOLDER }}
-          strip_components: 1
+          strip_components: 2
