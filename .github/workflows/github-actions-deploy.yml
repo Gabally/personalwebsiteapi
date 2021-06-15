@@ -1,0 +1,27 @@
+name: Deploy to server
+on: [push]
+jobs:
+  Deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.16.0
+      - name: Installing project dependencies
+        working-directory: ./src
+        run: go mod download
+      - name: Building the project
+        working-directory: ./src
+        run: go build -o api *.go
+      - name: copying new files
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          port: ${{ secrets.PORT }}
+          key: ${{ secrets.KEY }}
+          source: "./src/api"
+          target: ${{ secrets.TARGET_FOLDER }}
+          strip_components: 1
