@@ -25,3 +25,11 @@ jobs:
           source: "./src/api"
           target: ${{ secrets.TARGET_FOLDER }}
           strip_components: 2
+      - name: Reloading app
+        uses: fifsky/ssh-action@master
+        with:
+          command: cd ${{ secrets.TARGET_FOLDER }} && chmod +x api && pm2 restart portfolio-api
+          host: ${{ secrets.HOST }}
+          user: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          args: "-tt"
