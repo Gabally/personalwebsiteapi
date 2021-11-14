@@ -1,6 +1,4 @@
-*.env
-
-/src/api
-
-*.sh
-*.bat
+/build
+/node_modules
+/.env
+/lol.db
