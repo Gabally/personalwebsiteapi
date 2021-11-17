@@ -7,11 +7,13 @@ export default {
     async createPost(req: Request, res: Response) {
         if (validators.isNotNull(req.body.title) 
         && validators.isNotNull(req.body.content)
-        && validators.isNotNull(req.body.tag)) {
+        && validators.isNotNull(req.body.tag)
+        && validators.isBoolean(req.body.published)) {
             await db<Post>("post").insert({
                 title: req.body.title,
                 content: req.body.content,
-                tag: req.body.tag
+                tag: req.body.tag,
+                published: req.body.published
             });
             res.status(201).json({
                 success: true

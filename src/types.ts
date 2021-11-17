@@ -8,7 +8,8 @@ export interface Post {
     id: number,
     title: string,
     content: string,
-    tag: string
+    tag: string,
+    published: boolean
 }
 
 export interface Tool {

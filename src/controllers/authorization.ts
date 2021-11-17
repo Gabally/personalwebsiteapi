@@ -41,5 +41,8 @@ export default {
         res.status(200).json({
             response: user == null || user == undefined
         });
+    },
+    isLoggedIn (req: Request, res: Response) {
+        res.status(200).json(req.session!.authorized === true);
     }
 }

@@ -6,9 +6,10 @@ export const PostModel = async () => {
         .createTable("post", table => {
           table.increments("id");
           table.string("title").notNullable().unique();
-          table.string("content", 999999).notNullable();
+          table.string("content", 99999999999).notNullable();
           table.string("tag").notNullable();
           table.date("insertion_date").notNullable().defaultTo(db.fn.now());
+          table.boolean("published").notNullable();
         });
     }
 }

@@ -4,11 +4,21 @@ import { db } from "../utils";
 
 export default {
     async getPosts(req: Request, res: Response) {
-        let posts = await db.select("id", "title", "tag", "insertion_date").from<Post>("post").orderBy("insertion_date");
+        let posts: Post[] = [];
+        if (req.session!.authorized) {
+            posts = await db.select("id", "title", "tag", "insertion_date", "published").from<Post>("post").orderBy("insertion_date");
+        } else {
+            posts = await db.select("title", "tag", "insertion_date").from<Post>("post").where({ published: true }).orderBy("insertion_date");
+        }
         res.json(posts);
     },
     async getPost(req: Request, res: Response) {
-        let post = await db.select().from<Post>("post").where({ title: <string>req.query.title }).first();
+        let post: any;
+        if (req.session!.authorized) {
+            post = await db.select().from<Post>("post").where({ title: <string>req.query.title }).first();
+        } else {
+            post = await db.select("title", "content", "tag", "insertion_date").from<Post>("post").where({ title: <string>req.query.title, published: true }).first();
+        }
         res.json(post);
     },
     async getTools(req: Request, res: Response) {

@@ -29,6 +29,7 @@ router.get("/fetchmetadata", getMetaData);
 router.get("/cansetcredentials", authorization.canSetCredentials);
 router.post("/setcredentials", authorization.setCredentials);
 router.post("/login", authorization.login);
+router.get("/isloggedin", authorization.isLoggedIn);
 
 //Create
 authorizedRouter.post("/newpost", insertData.createPost);

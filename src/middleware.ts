@@ -9,7 +9,7 @@ export const CORSHeader = (req: Request, res: Response, next: Function) => {
     if (allowedOrigins.includes(req.header("origin")!)) {
         res.setHeader("Access-Control-Allow-Origin", req.header("origin")!);
         res.setHeader("Access-Control-Allow-Credentials", "true");
-        res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE, OPTIONS')
+        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
         res.setHeader("Access-Control-Allow-Headers", "Content-Type, Origin, Accept, token")
     }
     if (req.method == "OPTIONS") {

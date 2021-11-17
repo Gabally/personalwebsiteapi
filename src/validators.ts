@@ -30,5 +30,8 @@ export default {
         } catch (error) {
             return false;
         }
+    },
+    isBoolean(field: any) {
+        return typeof(field) === "boolean";
     }
 }
