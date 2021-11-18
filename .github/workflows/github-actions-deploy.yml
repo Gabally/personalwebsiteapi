@@ -15,7 +15,7 @@ jobs:
           username: ${{ secrets.USERNAME }}
           port: ${{ secrets.PORT }}
           key: ${{ secrets.KEY }}
-          source: "src/*,package.json,tsconfig.json"
+          source: "./src,./package.json,./tsconfig.json"
           target: ${{ secrets.TARGET_FOLDER }}
           strip_components: 2
       - name: Reloading app
