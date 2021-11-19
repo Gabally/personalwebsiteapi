@@ -25,7 +25,7 @@ jobs:
       - name: Reloading app
         uses: fifsky/ssh-action@master
         with:
-          command: cd ${{ secrets.TARGET_FOLDER }} && npm install && npm run build && pm2 restart blog-api
+          command: cd ${{ secrets.TARGET_FOLDER }} && npm install && pm2 restart blog-api
           host: ${{ secrets.HOST }}
           user: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
